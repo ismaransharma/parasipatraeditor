@@ -15,16 +15,19 @@
         align-items: center;
         padding: 20px;
       }
+
       h1 {
         margin-bottom: 20px;
         color: #333;
       }
+
       #controls {
         margin-bottom: 20px;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
+
       input[type="file"],
       input[type="color"],
       input[type="number"],
@@ -36,10 +39,12 @@
         border: 1px solid #ccc;
         font-size: 14px;
       }
+
       #canvasContainer {
         border: 2px solid #ccc;
         background: #fff;
       }
+
       canvas {
         display: block;
         max-width: 100%;
@@ -47,6 +52,7 @@
       }
     </style>
   </head>
+
   <body>
     <h1>Parasi Patra Editor</h1>
 
@@ -135,30 +141,36 @@
         ctx.translate(textX, textY);
         ctx.rotate((rotation * Math.PI) / 180);
         ctx.font = `${fontSize}px Arial`;
-        ctx.fillStyle = lineColor;
-        ctx.strokeStyle = lineColor;
         ctx.globalAlpha = opacity;
 
-        // Dynamic line length (70% of canvas width)
+        // Dynamic line length
         const totalLineWidth = canvas.width * 0.7;
-
-        // Measure text
         const textWidth = ctx.measureText(watermark).width;
         const lineWidth = (totalLineWidth - textWidth) / 2;
 
-        // Draw left line
+        // Draw left line with glow
+        ctx.strokeStyle = "#0066b3";
+        ctx.lineWidth = 4;
+        ctx.shadowColor = "#ffffff";
+        ctx.shadowBlur = 8;
         ctx.beginPath();
         ctx.moveTo(-totalLineWidth / 2, 0);
         ctx.lineTo(-totalLineWidth / 2 + lineWidth, 0);
         ctx.stroke();
 
-        // Draw right line
+        // Draw right line with glow
         ctx.beginPath();
         ctx.moveTo(totalLineWidth / 2 - lineWidth, 0);
         ctx.lineTo(totalLineWidth / 2, 0);
         ctx.stroke();
 
-        // Draw text
+        // Draw the “WordArt” text: first outline
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 6; // thick outline
+        ctx.strokeText(watermark, -textWidth / 2, fontSize / 3);
+
+        // Then fill the text
+        ctx.fillStyle = lineColor;
         ctx.fillText(watermark, -textWidth / 2, fontSize / 3);
 
         ctx.restore();
