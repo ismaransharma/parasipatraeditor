@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Parasi Patra Editor</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#0066b3" />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -13,43 +15,40 @@
         align-items: center;
         padding: 20px;
       }
-
       h1 {
         margin-bottom: 20px;
         color: #333;
       }
-
       #controls {
         margin-bottom: 20px;
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
       }
-
       input[type="file"],
       input[type="color"],
       input[type="number"],
       input[type="text"],
-      button {
+      button,
+      input[type="range"] {
         padding: 8px;
         border-radius: 5px;
         border: 1px solid #ccc;
         font-size: 14px;
       }
-
       #canvasContainer {
         border: 2px solid #ccc;
         background: #fff;
       }
-
       canvas {
         display: block;
+        max-width: 100%;
+        height: auto;
       }
     </style>
   </head>
-
   <body>
-    <h1>Parasi Patra Editor</h1>
+    <h1>Watermark Editor</h1>
 
     <div id="controls">
       <input type="file" id="imageUpload" accept="image/*" />
@@ -57,8 +56,7 @@
         type="text"
         id="watermarkText"
         placeholder="Watermark Text"
-        value="www.parasipatra.com"
-        readonly
+        value="parasipatra.com"
       />
       <input type="number" id="fontSize" min="10" max="100" value="30" />
       <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
@@ -82,7 +80,7 @@
       let fontSize = 30;
       let opacity = 1;
       let rotation = 0;
-      const lineColor = "#0066b3"; // new color
+      const lineColor = "#0066b3";
 
       // Upload image
       document.getElementById("imageUpload").addEventListener("change", (e) => {
@@ -142,7 +140,7 @@
         ctx.globalAlpha = opacity;
 
         // Dynamic line length (50% of canvas width)
-        const totalLineWidth = canvas.width * 0.5;
+        const totalLineWidth = canvas.width * 0.7;
 
         // Measure text
         const textWidth = ctx.measureText(watermark).width;
@@ -205,6 +203,16 @@
         link.href = canvas.toDataURL();
         link.click();
       });
+
+      // Register service worker for PWA
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("./sw.js")
+            .then((reg) => console.log("Service Worker registered", reg))
+            .catch((err) => console.log("Service Worker failed", err));
+        });
+      }
     </script>
   </body>
 </html>
