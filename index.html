@@ -263,7 +263,7 @@
 
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const link = document.createElement("a");
-        link.download = "watermarked_image.png";
+        link.download = "watermarked_image.jpg";
         link.href = canvas.toDataURL();
         link.click();
       });

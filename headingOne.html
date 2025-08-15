@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Parasi Patra Editor | 2</title>
+    <title>Facebook Post Editor</title>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
@@ -16,7 +16,7 @@
     />
     <style>
       body {
-        font-family: Arial, sans-serif;
+        font-family: "Hind", Arial, sans-serif;
         background: #f4f4f4;
         display: flex;
         flex-direction: column;
@@ -47,16 +47,29 @@
         font-size: 14px;
       }
 
-      #canvasContainer {
-        border: 2px solid #ccc;
+      #previewContainer {
+        border: 1px solid #ccc;
         background: #fff;
+        padding: 10px;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 1250px;
+        text-align: center;
+      }
+
+      .facebook-frame {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        width: 1200px;
+        height: 630px;
+        display: inline-block;
         position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       }
 
       canvas {
         display: block;
-        max-width: 100%;
-        height: auto;
       }
 
       footer {
@@ -71,47 +84,21 @@
   </head>
 
   <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
-      <div class="container-fluid">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link" href="index.html">Editor</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link active" href="headingOne.html">Editor 2</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <h1 class="my-2">Parasi Patra Editor 2</h1>
+    <h1>Facebook Post Editor</h1>
 
     <div id="controls">
       <input type="file" id="imageUpload" accept="image/*" />
-      <input type="text" id="headingText" placeholder="Heading" value="" />
+      <input type="text" id="headingText" placeholder="Heading" />
       <input type="color" id="headingColor" value="#0066b3" />
-      <input
-        type="text"
-        id="subheadingText"
-        placeholder="Subheading"
-        value=""
-      />
+      <input type="text" id="subheadingText" placeholder="Subheading" />
       <input type="color" id="subheadingColor" value="#ffffff" />
       <button id="downloadBtn">Download</button>
     </div>
 
-    <div id="canvasContainer">
-      <canvas id="canvas"></canvas>
+    <div id="previewContainer">
+      <div class="facebook-frame">
+        <canvas id="canvas" width="1200" height="630"></canvas>
+      </div>
     </div>
 
     <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
@@ -120,49 +107,51 @@
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
+      const imageUpload = document.getElementById("imageUpload");
+      const headingInput = document.getElementById("headingText");
+      const subheadingInput = document.getElementById("subheadingText");
+      const headingColorInput = document.getElementById("headingColor");
+      const subheadingColorInput = document.getElementById("subheadingColor");
+
       let bgImage = new Image();
       let logo = new Image();
       logo.src = "icon-192.png";
-      bgImage.src = "";
 
-      let headingText = document.getElementById("headingText").value;
-      let subheadingText = document.getElementById("subheadingText").value;
-      let headingColor = document.getElementById("headingColor").value;
-      let subheadingColor = document.getElementById("subheadingColor").value;
+      function draw(ctx, width, height) {
+        ctx.clearRect(0, 0, width, height);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
 
-      function draw(canvasCtx, width, height) {
-        canvasCtx.clearRect(0, 0, width, height);
-        canvasCtx.imageSmoothingQuality = "high";
-
-        if (bgImage.src) canvasCtx.drawImage(bgImage, 0, 0, width, height);
+        // Background
+        if (bgImage.src) ctx.drawImage(bgImage, 0, 0, width, height);
 
         // Curve overlay
-        let topY = height * 0.5;
-        canvasCtx.beginPath();
-        canvasCtx.moveTo(0, height);
-        canvasCtx.lineTo(width, height);
-        canvasCtx.lineTo(width, topY);
-        canvasCtx.quadraticCurveTo(width / 2, topY + height * 0.125, 0, topY);
-        canvasCtx.closePath();
-        canvasCtx.fillStyle = "rgba(0,20,60,0.8)";
-        canvasCtx.fill();
+        const topY = height * 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, height);
+        ctx.lineTo(width, height);
+        ctx.lineTo(width, topY);
+        ctx.quadraticCurveTo(width / 2, topY + height * 0.125, 0, topY);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(0,20,60,0.8)";
+        ctx.fill();
 
-        // Dot effect
-        canvasCtx.fillStyle = "rgba(255,255,255,0.2)";
-        for (let i = 0; i < 10; i++) {
-          let x = Math.random() * width;
-          let y = topY + Math.random() * (height - topY);
-          canvasCtx.beginPath();
-          canvasCtx.arc(x, y, Math.random() * 2 + 1, 0, Math.PI * 2);
-          canvasCtx.fill();
+        // Dots
+        ctx.fillStyle = "rgba(255,255,255,0.2)";
+        for (let i = 0; i < 20; i++) {
+          const x = Math.random() * width;
+          const y = topY + Math.random() * (height - topY);
+          ctx.beginPath();
+          ctx.arc(x, y, Math.random() * 2 + 1, 0, Math.PI * 2);
+          ctx.fill();
         }
 
         // Logo
         if (logo.complete) {
-          let logoAspect = logo.width / logo.height;
-          let maxLogoW = width * 0.125;
-          let logoH = maxLogoW / logoAspect;
-          canvasCtx.drawImage(
+          const logoAspect = logo.width / logo.height;
+          const maxLogoW = width * 0.125;
+          const logoH = maxLogoW / logoAspect;
+          ctx.drawImage(
             logo,
             width / 2 - maxLogoW / 2,
             topY + height * 0.1,
@@ -171,93 +160,121 @@
           );
         }
 
-        // Heading
-        canvasCtx.font = `bold ${Math.floor(width * 0.05)}px 'Hind', Arial`;
-        canvasCtx.fillStyle = headingColor;
-        canvasCtx.textAlign = "center";
-        canvasCtx.fillText(headingText, width / 2, topY + height * 0.3);
+        // Heading with sharper rendering
+        ctx.font = `bold ${Math.floor(width * 0.055)}px 'Hind', Arial`;
+        ctx.fillStyle = headingColorInput.value;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "alphabetic";
+        ctx.fontSmoothing = "antialiased";
+        ctx.fillText(headingInput.value, width / 2, topY + height * 0.26);
 
         // Subheading
-        canvasCtx.font = `bold ${Math.floor(width * 0.035)}px 'Hind', Arial`;
-        canvasCtx.fillStyle = subheadingColor;
-        canvasCtx.fillText(subheadingText, width / 2, topY + height * 0.38);
+        ctx.font = `bold ${Math.floor(width * 0.04)}px 'Hind', Arial`;
+        ctx.fillStyle = subheadingColorInput.value;
+        ctx.fontSmoothing = "antialiased";
+        ctx.fillText(subheadingInput.value, width / 2, topY + height * 0.35);
 
-        // Website text
-        canvasCtx.save();
-        canvasCtx.font = `bold ${Math.floor(width * 0.015)}px 'Hind', Arial`;
-        canvasCtx.shadowColor = "rgba(255,255,255,0.5)";
-        canvasCtx.shadowBlur = 2;
-        canvasCtx.shadowOffsetX = 1;
-        canvasCtx.shadowOffsetY = 1;
-        canvasCtx.fillStyle = "#fff";
-        canvasCtx.fillText(
-          "www.parasipatra.com",
-          width / 2,
-          height - height * 0.03
+        // Website full-width text with white background
+        const websiteText =
+          "यससम्बन्धी समाचारका लागि www.parasipatra.com मा जानुहोस् ।";
+        ctx.font = `bold ${Math.floor(width * 0.02)}px 'Hind', Arial`;
+        const textHeight = Math.floor(width * 0.035);
+        const padding = 10;
+        const textWidth = ctx.measureText(websiteText).width;
+
+        // Draw full-width background
+        ctx.fillStyle = "#0066b3";
+        ctx.fillRect(
+          0,
+          height - textHeight - 2 * padding,
+          width,
+          textHeight + 2 * padding
         );
-        canvasCtx.restore();
+
+        // Draw text
+        ctx.fillStyle = "#fff";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fontSmoothing = "antialiased";
+        ctx.fillText(websiteText, width / 2, height - textHeight / 2 - padding);
       }
 
-      // Initial draw
-      bgImage.onload = () => {
-        canvas.width = bgImage.width;
-        canvas.height = bgImage.height;
+      function updateCanvas() {
         draw(ctx, canvas.width, canvas.height);
-      };
+      }
 
-      // Event listeners
-      document.getElementById("imageUpload").addEventListener("change", (e) => {
+      // Upload background
+      imageUpload.addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function (ev) {
-          bgImage.onload = () => {
-            canvas.width = bgImage.width;
-            canvas.height = bgImage.height;
-            draw(ctx, canvas.width, canvas.height);
-          };
+        reader.onload = (ev) => {
+          bgImage.onload = updateCanvas;
           bgImage.src = ev.target.result;
         };
         reader.readAsDataURL(file);
       });
 
-      document.getElementById("headingText").addEventListener("input", (e) => {
-        headingText = e.target.value;
-        draw(ctx, canvas.width, canvas.height);
-      });
-      document
-        .getElementById("subheadingText")
-        .addEventListener("input", (e) => {
-          subheadingText = e.target.value;
-          draw(ctx, canvas.width, canvas.height);
-        });
-      document.getElementById("headingColor").addEventListener("input", (e) => {
-        headingColor = e.target.value;
-        draw(ctx, canvas.width, canvas.height);
-      });
-      document
-        .getElementById("subheadingColor")
-        .addEventListener("input", (e) => {
-          subheadingColor = e.target.value;
-          draw(ctx, canvas.width, canvas.height);
-        });
+      // Inputs
+      [
+        headingInput,
+        subheadingInput,
+        headingColorInput,
+        subheadingColorInput,
+      ].forEach((input) => input.addEventListener("input", updateCanvas));
 
-      // Download button (auto HD)
+      // Download button
       document.getElementById("downloadBtn").addEventListener("click", () => {
-        const scaleFactor = 2; // 4x resolution for HD/4K
         const hdCanvas = document.createElement("canvas");
-        hdCanvas.width = canvas.width * scaleFactor;
-        hdCanvas.height = canvas.height * scaleFactor;
+        hdCanvas.width = 7680;
+        hdCanvas.height = 4320;
         const hdCtx = hdCanvas.getContext("2d");
-        hdCtx.scale(scaleFactor, scaleFactor);
-        draw(hdCtx, canvas.width, canvas.height);
+        hdCtx.imageSmoothingEnabled = true;
+        hdCtx.imageSmoothingQuality = "high";
 
-        // Export as JPEG to reduce file size
+        draw(hdCtx, hdCanvas.width, hdCanvas.height);
+
+        const finalCanvas = document.createElement("canvas");
+        finalCanvas.width = 7680;
+        finalCanvas.height = 4320;
+        const finalCtx = finalCanvas.getContext("2d");
+        finalCtx.imageSmoothingEnabled = true;
+        finalCtx.imageSmoothingQuality = "high";
+
+        // Progressive downscaling for sharper result
+        let tempCanvas = document.createElement("canvas");
+        let tempCtx = tempCanvas.getContext("2d");
+        tempCanvas.width = hdCanvas.width / 2;
+        tempCanvas.height = hdCanvas.height / 2;
+        tempCtx.imageSmoothingEnabled = true;
+        tempCtx.imageSmoothingQuality = "high";
+        tempCtx.drawImage(hdCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+        finalCtx.drawImage(
+          tempCanvas,
+          0,
+          0,
+          finalCanvas.width,
+          finalCanvas.height
+        );
+
+        let quality = 0.98;
+        let dataURL = finalCanvas.toDataURL("image/jpeg", quality);
+
+        // Reduce quality progressively if > 2MB
+        while (dataURL.length / 1024 > 2000 && quality > 0.5) {
+          quality -= 0.05;
+          dataURL = finalCanvas.toDataURL("image/jpeg", quality);
+        }
+
         const link = document.createElement("a");
-        link.download = "heading_image.jpg";
-        link.href = hdCanvas.toDataURL("image/jpeg", 0.5);
+        link.download = "facebook_post_8k.jpg";
+        link.href = dataURL;
         link.click();
       });
+
+      // Initial draw
+      updateCanvas();
     </script>
   </body>
 </html>
