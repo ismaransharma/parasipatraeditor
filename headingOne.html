@@ -177,7 +177,7 @@
           ctx.drawImage(
             logo,
             width / 2 - maxLogoW / 2,
-            topY + height * 0.1,
+            topY + height * 0.08,
             maxLogoW,
             logoH
           );
@@ -189,13 +189,13 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "alphabetic";
         ctx.fontSmoothing = "antialiased";
-        ctx.fillText(headingInput.value, width / 2, topY + height * 0.26);
+        ctx.fillText(headingInput.value, width / 2, topY + height * 0.27);
 
         // Subheading
         ctx.font = `bold ${Math.floor(width * 0.04)}px 'Hind', Arial`;
         ctx.fillStyle = subheadingColorInput.value;
         ctx.fontSmoothing = "antialiased";
-        ctx.fillText(subheadingInput.value, width / 2, topY + height * 0.35);
+        ctx.fillText(subheadingInput.value, width / 2, topY + height * 0.37);
 
         // Website full-width text with white background
         const websiteText =
