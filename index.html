@@ -64,7 +64,7 @@
         placeholder="Watermark Text"
         value="www.parasipatra.com"
       />
-      <input type="number" id="fontSize" min="10" max="100" value="30" />
+      <input type="number" id="fontSize" min="10" max="100" value="22" />
       <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
       <input type="range" id="rotation" min="0" max="360" step="1" value="0" />
       <button id="downloadBtn">Download</button>
@@ -83,7 +83,7 @@
       let textX = 50,
         textY = 50;
       let isDragging = false;
-      let fontSize = 30;
+      let fontSize = 22;
       let opacity = 1;
       let rotation = 0;
       const lineColor = "#0066b3";
@@ -150,7 +150,7 @@
 
         // Draw left line with glow
         ctx.strokeStyle = "#0066b3";
-        ctx.lineWidth = 4;
+        ctx.lineWidth = 1.5;
         ctx.shadowColor = "#ffffff";
         ctx.shadowBlur = 8;
         ctx.beginPath();
@@ -166,7 +166,7 @@
 
         // Draw the “WordArt” text: first outline
         ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 6; // thick outline
+        ctx.lineWidth = 4; // thick outline
         ctx.strokeText(watermark, -textWidth / 2, fontSize / 3);
 
         // Then fill the text
