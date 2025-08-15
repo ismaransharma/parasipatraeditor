@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Parasi Patra Editor | 2</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Hind:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      #controls {
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      input[type="file"],
+      input[type="color"],
+      input[type="text"],
+      button {
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        font-size: 14px;
+      }
+
+      #canvasContainer {
+        border: 2px solid #ccc;
+        background: #fff;
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+        max-width: 100%;
+        height: auto;
+      }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-top: 30px;
+        font-size: 14px;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Editor</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="headingOne.html">Editor 2</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <h1 class="my-2">Parasi Patra Editor 2</h1>
+
+    <div id="controls">
+      <input type="file" id="imageUpload" accept="image/*" />
+      <input type="text" id="headingText" placeholder="Heading" value="" />
+      <input type="color" id="headingColor" value="#FFD700" />
+      <input
+        type="text"
+        id="subheadingText"
+        placeholder="Subheading"
+        value=""
+      />
+      <input type="color" id="subheadingColor" value="#ffffff" />
+      <button id="downloadBtn">Download</button>
+    </div>
+
+    <div id="canvasContainer">
+      <canvas id="canvas"></canvas>
+    </div>
+
+    <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
+
+    <script>
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      let bgImage = new Image();
+      let logo = new Image();
+      logo.src = "icon-192.png";
+      bgImage.src = "";
+
+      let headingText = document.getElementById("headingText").value;
+      let subheadingText = document.getElementById("subheadingText").value;
+      let headingColor = document.getElementById("headingColor").value;
+      let subheadingColor = document.getElementById("subheadingColor").value;
+
+      function draw(canvasCtx, width, height) {
+        canvasCtx.clearRect(0, 0, width, height);
+        canvasCtx.imageSmoothingQuality = "high";
+
+        if (bgImage.src) canvasCtx.drawImage(bgImage, 0, 0, width, height);
+
+        // Curve overlay
+        let topY = height * 0.5;
+        canvasCtx.beginPath();
+        canvasCtx.moveTo(0, height);
+        canvasCtx.lineTo(width, height);
+        canvasCtx.lineTo(width, topY);
+        canvasCtx.quadraticCurveTo(width / 2, topY + height * 0.125, 0, topY);
+        canvasCtx.closePath();
+        canvasCtx.fillStyle = "rgba(0,20,60,0.8)";
+        canvasCtx.fill();
+
+        // Dot effect
+        canvasCtx.fillStyle = "rgba(255,255,255,0.2)";
+        for (let i = 0; i < 10; i++) {
+          let x = Math.random() * width;
+          let y = topY + Math.random() * (height - topY);
+          canvasCtx.beginPath();
+          canvasCtx.arc(x, y, Math.random() * 2 + 1, 0, Math.PI * 2);
+          canvasCtx.fill();
+        }
+
+        // Logo
+        if (logo.complete) {
+          let logoAspect = logo.width / logo.height;
+          let maxLogoW = width * 0.125;
+          let logoH = maxLogoW / logoAspect;
+          canvasCtx.drawImage(
+            logo,
+            width / 2 - maxLogoW / 2,
+            topY + height * 0.1,
+            maxLogoW,
+            logoH
+          );
+        }
+
+        // Heading
+        canvasCtx.font = `bold ${Math.floor(width * 0.05)}px 'Hind', Arial`;
+        canvasCtx.fillStyle = headingColor;
+        canvasCtx.textAlign = "center";
+        canvasCtx.fillText(headingText, width / 2, topY + height * 0.3);
+
+        // Subheading
+        canvasCtx.font = `bold ${Math.floor(width * 0.035)}px 'Hind', Arial`;
+        canvasCtx.fillStyle = subheadingColor;
+        canvasCtx.fillText(subheadingText, width / 2, topY + height * 0.38);
+
+        // Website text
+        canvasCtx.save();
+        canvasCtx.font = `bold ${Math.floor(width * 0.015)}px 'Hind', Arial`;
+        canvasCtx.shadowColor = "rgba(255,255,255,0.5)";
+        canvasCtx.shadowBlur = 2;
+        canvasCtx.shadowOffsetX = 1;
+        canvasCtx.shadowOffsetY = 1;
+        canvasCtx.fillStyle = "#fff";
+        canvasCtx.fillText(
+          "www.parasipatra.com",
+          width / 2,
+          height - height * 0.03
+        );
+        canvasCtx.restore();
+      }
+
+      // Initial draw
+      bgImage.onload = () => {
+        canvas.width = bgImage.width;
+        canvas.height = bgImage.height;
+        draw(ctx, canvas.width, canvas.height);
+      };
+
+      // Event listeners
+      document.getElementById("imageUpload").addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (ev) {
+          bgImage.onload = () => {
+            canvas.width = bgImage.width;
+            canvas.height = bgImage.height;
+            draw(ctx, canvas.width, canvas.height);
+          };
+          bgImage.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      document.getElementById("headingText").addEventListener("input", (e) => {
+        headingText = e.target.value;
+        draw(ctx, canvas.width, canvas.height);
+      });
+      document
+        .getElementById("subheadingText")
+        .addEventListener("input", (e) => {
+          subheadingText = e.target.value;
+          draw(ctx, canvas.width, canvas.height);
+        });
+      document.getElementById("headingColor").addEventListener("input", (e) => {
+        headingColor = e.target.value;
+        draw(ctx, canvas.width, canvas.height);
+      });
+      document
+        .getElementById("subheadingColor")
+        .addEventListener("input", (e) => {
+          subheadingColor = e.target.value;
+          draw(ctx, canvas.width, canvas.height);
+        });
+
+      // Download button (auto HD)
+      document.getElementById("downloadBtn").addEventListener("click", () => {
+        const scaleFactor = 2; // 4x resolution for HD/4K
+        const hdCanvas = document.createElement("canvas");
+        hdCanvas.width = canvas.width * scaleFactor;
+        hdCanvas.height = canvas.height * scaleFactor;
+        const hdCtx = hdCanvas.getContext("2d");
+        hdCtx.scale(scaleFactor, scaleFactor);
+        draw(hdCtx, canvas.width, canvas.height);
+
+        // Export as JPEG to reduce file size
+        const link = document.createElement("a");
+        link.download = "heading_image.jpg";
+        link.href = hdCanvas.toDataURL("image/jpeg", 0.5);
+        link.click();
+      });
+    </script>
+  </body>
+</html>

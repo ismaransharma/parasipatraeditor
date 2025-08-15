@@ -6,6 +6,10 @@
     <title>Parasi Patra Editor</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#0066b3" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -26,6 +30,7 @@
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
+        justify-content: center;
       }
 
       input[type="file"],
@@ -50,11 +55,43 @@
         max-width: 100%;
         height: auto;
       }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-top: 30px;
+        font-size: 14px;
+        width: 100%;
+      }
     </style>
   </head>
 
   <body>
-    <h1>Parasi Patra Editor</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="index.html">Editor</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="headingOne.html">Editor 2</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <h1 class="my-2">Parasi Patra Editor</h1>
 
     <div id="controls">
       <input type="file" id="imageUpload" accept="image/*" />
@@ -63,7 +100,6 @@
         id="watermarkText"
         placeholder="Watermark Text"
         value="www.parasipatra.com"
-        readonly
       />
       <input type="number" id="fontSize" min="10" max="100" value="22" />
       <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
@@ -75,7 +111,17 @@
       <canvas id="canvas"></canvas>
     </div>
 
+    <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
     <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker
+          .getRegistrations()
+          .then(function (registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+      }
       const canvas = document.getElementById("canvas");
       const ctx = canvas.getContext("2d");
 
@@ -89,15 +135,21 @@
       let rotation = 0;
       const lineColor = "#0066b3";
 
-      // Upload image
       document.getElementById("imageUpload").addEventListener("change", (e) => {
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
         reader.onload = function (event) {
           img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
+            const maxWidth = 800;
+            const maxHeight = 600;
+            let scale = Math.min(
+              maxWidth / img.width,
+              maxHeight / img.height,
+              1
+            );
+            canvas.width = img.width * scale;
+            canvas.height = img.height * scale;
             textX = canvas.width / 2;
             textY = canvas.height / 2;
             draw();
@@ -107,7 +159,6 @@
         reader.readAsDataURL(file);
       });
 
-      // Update watermark text
       document
         .getElementById("watermarkText")
         .addEventListener("input", (e) => {
@@ -115,25 +166,21 @@
           draw();
         });
 
-      // Update font size
       document.getElementById("fontSize").addEventListener("input", (e) => {
-        fontSize = e.target.value;
+        fontSize = parseInt(e.target.value);
         draw();
       });
 
-      // Update opacity
       document.getElementById("opacity").addEventListener("input", (e) => {
-        opacity = e.target.value;
+        opacity = parseFloat(e.target.value);
         draw();
       });
 
-      // Update rotation
       document.getElementById("rotation").addEventListener("input", (e) => {
-        rotation = e.target.value;
+        rotation = parseFloat(e.target.value);
         draw();
       });
 
-      // Draw function
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         if (img.src) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -144,12 +191,10 @@
         ctx.font = `${fontSize}px Arial`;
         ctx.globalAlpha = opacity;
 
-        // Dynamic line length
         const totalLineWidth = canvas.width * 0.5;
         const textWidth = ctx.measureText(watermark).width;
         const lineWidth = (totalLineWidth - textWidth) / 2;
 
-        // Draw left line with glow
         ctx.strokeStyle = "#0066b3";
         ctx.lineWidth = 1.5;
         ctx.shadowColor = "#ffffff";
@@ -159,25 +204,21 @@
         ctx.lineTo(-totalLineWidth / 2 + lineWidth, 0);
         ctx.stroke();
 
-        // Draw right line with glow
         ctx.beginPath();
         ctx.moveTo(totalLineWidth / 2 - lineWidth, 0);
         ctx.lineTo(totalLineWidth / 2, 0);
         ctx.stroke();
 
-        // Draw the “WordArt” text: first outline
         ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 4; // thick outline
+        ctx.lineWidth = 4;
         ctx.strokeText(watermark, -textWidth / 2, fontSize / 3);
 
-        // Then fill the text
         ctx.fillStyle = lineColor;
         ctx.fillText(watermark, -textWidth / 2, fontSize / 3);
 
         ctx.restore();
       }
 
-      // Get mouse position relative to actual canvas pixels
       function getMousePos(canvas, evt) {
         const rect = canvas.getBoundingClientRect();
         const scaleX = canvas.width / rect.width;
@@ -188,14 +229,12 @@
         };
       }
 
-      // Drag watermark
       canvas.addEventListener("mousedown", (e) => {
         const pos = getMousePos(canvas, e);
         const mouseX = pos.x;
         const mouseY = pos.y;
-        ctx.font = `${fontSize}px Arial`;
-        const textHeight = fontSize;
         const totalLineWidth = canvas.width * 0.5;
+        const textHeight = fontSize;
         if (
           mouseX > textX - totalLineWidth / 2 &&
           mouseX < textX + totalLineWidth / 2 &&
@@ -222,7 +261,6 @@
         isDragging = false;
       });
 
-      // Download image
       document.getElementById("downloadBtn").addEventListener("click", () => {
         const link = document.createElement("a");
         link.download = "watermarked_image.png";
@@ -230,7 +268,6 @@
         link.click();
       });
 
-      // Register service worker for PWA
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker
