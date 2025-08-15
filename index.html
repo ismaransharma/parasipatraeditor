@@ -48,7 +48,7 @@
     </style>
   </head>
   <body>
-    <h1>Watermark Editor</h1>
+    <h1>Parasi Patra Editor</h1>
 
     <div id="controls">
       <input type="file" id="imageUpload" accept="image/*" />
@@ -139,7 +139,7 @@
         ctx.strokeStyle = lineColor;
         ctx.globalAlpha = opacity;
 
-        // Dynamic line length (50% of canvas width)
+        // Dynamic line length (70% of canvas width)
         const totalLineWidth = canvas.width * 0.7;
 
         // Measure text
@@ -164,13 +164,25 @@
         ctx.restore();
       }
 
+      // Get mouse position relative to actual canvas pixels
+      function getMousePos(canvas, evt) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+          x: (evt.clientX - rect.left) * scaleX,
+          y: (evt.clientY - rect.top) * scaleY,
+        };
+      }
+
       // Drag watermark
       canvas.addEventListener("mousedown", (e) => {
-        const mouseX = e.offsetX;
-        const mouseY = e.offsetY;
+        const pos = getMousePos(canvas, e);
+        const mouseX = pos.x;
+        const mouseY = pos.y;
         ctx.font = `${fontSize}px Arial`;
         const textHeight = fontSize;
-        const totalLineWidth = canvas.width * 0.8;
+        const totalLineWidth = canvas.width * 0.7;
         if (
           mouseX > textX - totalLineWidth / 2 &&
           mouseX < textX + totalLineWidth / 2 &&
@@ -183,8 +195,9 @@
 
       canvas.addEventListener("mousemove", (e) => {
         if (isDragging) {
-          textX = e.offsetX;
-          textY = e.offsetY;
+          const pos = getMousePos(canvas, e);
+          textX = pos.x;
+          textY = pos.y;
           draw();
         }
       });
