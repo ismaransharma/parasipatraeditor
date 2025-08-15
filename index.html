@@ -262,9 +262,80 @@
       });
 
       document.getElementById("downloadBtn").addEventListener("click", () => {
+        const hdCanvas = document.createElement("canvas");
+        hdCanvas.width = 7680; // 8K width
+        hdCanvas.height = 4320; // 8K height
+        const hdCtx = hdCanvas.getContext("2d");
+        hdCtx.imageSmoothingEnabled = true;
+        hdCtx.imageSmoothingQuality = "high";
+
+        if (img.src) {
+          // scale original image to 8K
+          const imgRatio = img.width / img.height;
+          const canvasRatio = hdCanvas.width / hdCanvas.height;
+          let drawWidth = hdCanvas.width,
+            drawHeight = hdCanvas.height,
+            offsetX = 0,
+            offsetY = 0;
+
+          if (imgRatio > canvasRatio) {
+            drawHeight = hdCanvas.height;
+            drawWidth = imgRatio * hdCanvas.height;
+            offsetX = -(drawWidth - hdCanvas.width) / 2;
+          } else {
+            drawWidth = hdCanvas.width;
+            drawHeight = hdCanvas.width / imgRatio;
+            offsetY = -(drawHeight - hdCanvas.height) / 2;
+          }
+
+          hdCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+        }
+
+        hdCtx.save();
+        hdCtx.translate(hdCanvas.width / 2, hdCanvas.height / 2); // center
+        hdCtx.rotate((rotation * Math.PI) / 180);
+        hdCtx.font = `${fontSize * 8}px Arial`; // scale font proportionally
+        hdCtx.globalAlpha = opacity;
+
+        const totalLineWidth = hdCanvas.width * 0.5;
+        const textWidth = hdCtx.measureText(watermark).width;
+        const lineWidth = (totalLineWidth - textWidth) / 2;
+
+        hdCtx.strokeStyle = "#0066b3";
+        hdCtx.lineWidth = 12;
+        hdCtx.shadowColor = "#ffffff";
+        hdCtx.shadowBlur = 32;
+        hdCtx.beginPath();
+        hdCtx.moveTo(-totalLineWidth / 2, 0);
+        hdCtx.lineTo(-totalLineWidth / 2 + lineWidth, 0);
+        hdCtx.stroke();
+
+        hdCtx.beginPath();
+        hdCtx.moveTo(totalLineWidth / 2 - lineWidth, 0);
+        hdCtx.lineTo(totalLineWidth / 2, 0);
+        hdCtx.stroke();
+
+        hdCtx.strokeStyle = "#ffffff";
+        hdCtx.lineWidth = 16;
+        hdCtx.strokeText(watermark, -textWidth / 2, (fontSize * 8) / 3);
+
+        hdCtx.fillStyle = lineColor;
+        hdCtx.fillText(watermark, -textWidth / 2, (fontSize * 8) / 3);
+
+        hdCtx.restore();
+
+        // Compress progressively to stay under 2MB
+        let quality = 0.98;
+        let dataURL = hdCanvas.toDataURL("image/jpeg", quality);
+
+        while (dataURL.length / 1024 > 2000 && quality > 0.5) {
+          quality -= 0.05;
+          dataURL = hdCanvas.toDataURL("image/jpeg", quality);
+        }
+
         const link = document.createElement("a");
-        link.download = "watermarked_image.jpg";
-        link.href = canvas.toDataURL();
+        link.download = "watermarked_image_8k.jpg";
+        link.href = dataURL;
         link.click();
       });
 
