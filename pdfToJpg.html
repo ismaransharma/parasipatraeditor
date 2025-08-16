@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PDF To JPG</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      #dropZone {
+        border: 2px dashed #007bff;
+        padding: 40px;
+        text-align: center;
+        background: white;
+        cursor: pointer;
+        margin-bottom: 20px;
+        width: 100%;
+        max-width: 600px;
+      }
+
+      .preview {
+        margin-top: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        justify-content: center;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .page-container img {
+        border: 1px solid #ccc;
+        max-width: 200px;
+        cursor: pointer;
+      }
+
+      .page-label {
+        margin-top: 5px;
+        font-size: 14px;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .loading {
+        display: none;
+        margin-top: 10px;
+        font-weight: bold;
+        color: #007bff;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+      }
+
+      .modal-content {
+        max-width: 90%;
+        max-height: 90%;
+        overflow: auto;
+      }
+
+      .modal-content img {
+        width: 100%;
+        height: auto;
+      }
+
+      .close {
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        color: white;
+        font-size: 30px;
+        cursor: pointer;
+      }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-top: 30px;
+        font-size: 14px;
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Editor</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="headingOne.html">Editor 2</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="pdfToJpg.html">Pdf To Jpg</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <h1 class="my-2">PDF To JPG</h1>
+
+    <div id="dropZone">
+      <p>Click or Drag & Drop PDF here</p>
+    </div>
+    <input type="file" id="fileInput" accept="application/pdf" hidden />
+
+    <div class="loading" id="loading">Processing... Please wait</div>
+
+    <div class="mt-3">
+      <button id="downloadAll" class="btn btn-success" disabled>
+        Download All Pages
+      </button>
+    </div>
+
+    <div class="preview" id="preview"></div>
+
+    <div id="previewModal" class="modal">
+      <span class="close">&times;</span>
+      <div class="modal-content">
+        <img id="modalImage" src="" alt="Page Preview" />
+      </div>
+    </div>
+
+    <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
+
+    <script>
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const preview = document.getElementById("preview");
+      const loading = document.getElementById("loading");
+      const downloadAll = document.getElementById("downloadAll");
+      const modal = document.getElementById("previewModal");
+      const modalImage = document.getElementById("modalImage");
+      const closeModal = document.querySelector(".close");
+      let images = [];
+
+      dropZone.addEventListener("click", () => fileInput.click());
+
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dropZone.style.background = "#e9ecef";
+      });
+
+      dropZone.addEventListener("dragleave", () => {
+        dropZone.style.background = "white";
+      });
+
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dropZone.style.background = "white";
+        handleFile(e.dataTransfer.files[0]);
+      });
+
+      fileInput.addEventListener("change", (e) => {
+        handleFile(e.target.files[0]);
+      });
+
+      closeModal.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      window.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+
+      function handleFile(file) {
+        if (file && file.type === "application/pdf") {
+          const fileReader = new FileReader();
+          fileReader.onload = function () {
+            const typedarray = new Uint8Array(this.result);
+            renderPDF(typedarray);
+          };
+          fileReader.readAsArrayBuffer(file);
+        } else {
+          alert("Please upload a PDF file.");
+        }
+      }
+
+      async function renderPDF(data) {
+        loading.style.display = "block";
+        preview.innerHTML = "";
+        images = [];
+
+        const pdf = await pdfjsLib.getDocument({
+          data,
+        }).promise;
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+          const page = await pdf.getPage(pageNum);
+          const viewport = page.getViewport({
+            scale: 4,
+          });
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          await page.render({
+            canvasContext: ctx,
+            viewport,
+          }).promise;
+
+          const img = document.createElement("img");
+          img.src = canvas.toDataURL("image/jpeg", 1.0);
+
+          const container = document.createElement("div");
+          container.classList.add("page-container");
+          container.appendChild(img);
+
+          const label = document.createElement("div");
+          label.classList.add("page-label");
+          label.textContent = `Page ${pageNum}`;
+          container.appendChild(label);
+
+          const downloadButton = document.createElement("button");
+          downloadButton.classList.add("btn", "btn-primary", "mt-2");
+          downloadButton.textContent = "Download";
+          downloadButton.addEventListener("click", () =>
+            downloadImage(img.src, `page-${pageNum}.jpg`)
+          );
+          container.appendChild(downloadButton);
+
+          preview.appendChild(container);
+
+          images.push(img.src);
+
+          img.addEventListener("click", () => {
+            modalImage.src = img.src;
+            modal.style.display = "flex";
+          });
+        }
+
+        loading.style.display = "none";
+        downloadAll.disabled = false;
+      }
+
+      function dataURLtoBlob(dataurl) {
+        let arr = dataurl.split(","),
+          mime = arr[0].match(/:(.*?);/)[1],
+          bstr = atob(arr[1]),
+          n = bstr.length,
+          u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], {
+          type: mime,
+        });
+      }
+
+      function downloadImage(dataUrl, filename) {
+        loading.style.display = "block";
+        const a = document.createElement("a");
+        a.href = dataUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => (loading.style.display = "none"), 1000);
+      }
+
+      downloadAll.addEventListener("click", () => {
+        loading.style.display = "block";
+        const zip = new JSZip();
+        images.forEach((src, i) => {
+          const blob = dataURLtoBlob(src);
+          zip.file(`page-${i + 1}.jpg`, blob);
+        });
+        zip
+          .generateAsync({
+            type: "blob",
+          })
+          .then(function (content) {
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(content);
+            a.download = "pdf_pages.zip";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            loading.style.display = "none";
+          });
+      });
+    </script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.min.js"
+      integrity="sha512-eHx4nbBTkIr2i0m9SANm/cczPESd0DUEcfl84JpIuutE6oDxPhXvskMR08Wmvmfx5wUpVjlWdi82G5YLvqqJdA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </body>
+</html>
