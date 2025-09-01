@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEPSE Market Update Generator</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #f0f0f0;
+        font-family: Arial, sans-serif;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        display: flex;
+        flex-direction: row;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 20px;
+      }
+
+      .left-section {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .right-section {
+        width: 300px;
+        background: white;
+        padding: 20px;
+        box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+        overflow-y: auto;
+        border-radius: 8px;
+      }
+
+      #previewContainer {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #fbScreen {
+        height: 36rem;
+        width: 100%;
+        max-width: 360px;
+        aspect-ratio: 9 / 16;
+        background: white;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .header {
+        height: 3rem;
+        width: 100%;
+        font-size: 1.6rem;
+        font-weight: 500;
+        color: #fff;
+        background-color: #0066b3;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mainBody {
+        background-image: url("up.jpg");
+        height: 20rem;
+        background-position: center;
+        background-size: cover;
+        position: relative;
+        transition: background-image 0.3s ease;
+      }
+
+      .mainBody.down {
+        background-image: url("down.jpg");
+      }
+
+      .leftSideText {
+        position: relative;
+        left: -1rem;
+        height: 2rem;
+        width: 14rem;
+        text-align: center;
+        color: #fff;
+        padding: 0.2rem 0;
+        border: none;
+        font-size: 1.5rem;
+        border-radius: 0 2rem 2rem 0;
+        background-color: #67a844;
+        transition: background-color 0.3s ease;
+      }
+
+      .leftSideText.down {
+        background-color: #dc3545;
+      }
+
+      .middleText {
+        position: absolute;
+        bottom: 0.6rem;
+        width: 100%;
+        text-align: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #67a844;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
+          1px 1px 0 #fff, 0px 0px 5px #fff;
+        transition: color 0.3s ease;
+      }
+
+      .middleText.down {
+        color: #dc3545;
+      }
+
+      .footerPart {
+        height: 9rem;
+        display: flex;
+        justify-content: center;
+        margin: 2rem;
+      }
+
+      .greenBox {
+        height: 3rem;
+        width: 15rem;
+        background-color: #67a844;
+        border: none;
+        border-radius: 2rem;
+        transition: background-color 0.3s ease;
+      }
+
+      .greenBox.down {
+        background-color: #dc3545;
+      }
+
+      .greenBox h4 {
+        font-size: 1.3rem;
+        color: #fff;
+        height: 100%;
+        display: flex;
+        text-align: center;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .texts {
+        text-align: center;
+        margin: 0.9rem 0;
+        color: #67a844;
+        font-size: 1.3rem;
+        transition: color 0.3s ease;
+      }
+
+      .texts.down {
+        color: #dc3545;
+      }
+
+      .texts h5 {
+        font-size: 1.2rem;
+      }
+
+      /* Controls Styling */
+      .controls-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+        color: #333;
+      }
+
+      .control-group {
+        margin-bottom: 15px;
+      }
+
+      .control-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+        color: #333;
+        font-size: 14px;
+      }
+
+      .control-group select,
+      .control-group input {
+        width: 100%;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .control-group select:focus,
+      .control-group input:focus {
+        border-color: #0066b3;
+        outline: none;
+      }
+
+      .download-btn {
+        width: 100%;
+        background-color: #0066b3;
+        color: white;
+        border: none;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 15px;
+      }
+
+      footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        margin-top: 30px;
+        font-size: 14px;
+        width: 100%;
+      }
+
+      .download-btn:hover {
+        background-color: #004d87;
+      }
+
+      #downloadCanvas {
+        display: none;
+      }
+
+      /* Responsive styles */
+      @media (max-width: 900px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .right-section {
+          width: 100%;
+          max-width: 500px;
+          margin-top: 30px;
+        }
+
+        .left-section {
+          width: 100%;
+        }
+
+        #fbScreen {
+          max-width: 100%;
+          width: 100%;
+          max-width: 400px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+
+        .header {
+          height: 2.5rem;
+          font-size: 1.3rem;
+        }
+
+        .mainBody {
+          height: 16rem;
+        }
+
+        .leftSideText {
+          height: 1.8rem;
+          width: 12rem;
+          font-size: 1.2rem;
+        }
+
+        .middleText {
+          font-size: 1.2rem;
+          bottom: 0.5rem;
+        }
+
+        .footerPart {
+          margin: 1.5rem;
+          height: 7rem;
+        }
+
+        .greenBox {
+          height: 2.5rem;
+          width: 13rem;
+        }
+
+        .greenBox h4 {
+          font-size: 1.1rem;
+        }
+
+        .texts {
+          font-size: 1.1rem;
+          margin: 0.8rem;
+        }
+
+        .texts h5 {
+          font-size: 1rem;
+        }
+
+        .controls-title {
+          font-size: 18px;
+        }
+      }
+
+      @media (max-width: 400px) {
+        .header {
+          height: 2.2rem;
+          font-size: 1.1rem;
+        }
+
+        .mainBody {
+          height: 14rem;
+        }
+
+        .leftSideText {
+          height: 1.6rem;
+          width: 10rem;
+          font-size: 1rem;
+        }
+
+        .middleText {
+          font-size: 1rem;
+        }
+
+        .footerPart {
+          margin: 1rem;
+          height: 6rem;
+        }
+
+        .greenBox {
+          height: 2.2rem;
+          width: 11rem;
+        }
+
+        .greenBox h4 {
+          font-size: 0.9rem;
+        }
+
+        .texts {
+          font-size: 0.9rem;
+        }
+
+        .texts h5 {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="index.html">Editor</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="headingOne.html">Editor 2</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="pdfToJpg.html">Pdf To Jpg</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="nepse.html">NEPSE</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="container" style="margin: 2rem 0">
+      <!-- Left Section - Preview -->
+      <div class="left-section">
+        <div id="previewContainer">
+          <div id="fbScreen">
+            <div class="header">
+              <h4>www.parasipatra.com</h4>
+            </div>
+            <div class="mainBody" id="mainBody">
+              <div class="leftSideText" id="leftSideText">
+                <h4 id="percentageText">Up By: 0.56%</h4>
+              </div>
+              <div class="middleText" id="middleText">NEPSE MARKET UPDATE</div>
+            </div>
+            <div class="footerPart">
+              <div class="ggs">
+                <div class="greenBox" id="greenBox">
+                  <h4 id="pointsText">Today's Point: 2761.85</h4>
+                </div>
+                <div class="texts" id="textsDiv">
+                  <h3 id="dateText">Mon, Sep 01, 3:00 PM</h3>
+                  <br />
+                  <h5>SOURCE: NEPSE</h5>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Section - Controls -->
+      <div class="right-section">
+        <div class="controls-title">Controls</div>
+
+        <div class="control-group">
+          <label for="direction">Direction:</label>
+          <select id="direction" onchange="updateDisplay()">
+            <option value="up">Up By</option>
+            <option value="down">Down By</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="percentage">Percentage:</label>
+          <input
+            type="number"
+            id="percentage"
+            step="0.01"
+            value="0.56"
+            onchange="updateDisplay()"
+          />
+        </div>
+
+        <div class="control-group">
+          <label for="points">Today's Points:</label>
+          <input
+            type="number"
+            id="points"
+            step="0.01"
+            value="2761.85"
+            onchange="updateDisplay()"
+          />
+        </div>
+
+        <button class="download-btn" onclick="downloadImage()">
+          📥 Download
+        </button>
+      </div>
+    </div>
+
+    <canvas id="downloadCanvas"></canvas>
+
+    <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
+
+    <script>
+      let upImageData = "up.jpg"; // default up image
+      let downImageData = "down.jpg"; // default down image
+
+      function updateDisplay() {
+        const direction = document.getElementById("direction").value;
+        const percentage = document.getElementById("percentage").value;
+        const points = document.getElementById("points").value;
+
+        const mainBody = document.getElementById("mainBody");
+        const leftSideText = document.getElementById("leftSideText");
+        const middleText = document.getElementById("middleText");
+        const greenBox = document.getElementById("greenBox");
+        const textsDiv = document.getElementById("textsDiv");
+        const percentageText = document.getElementById("percentageText");
+        const pointsText = document.getElementById("pointsText");
+
+        // Update classes and content based on direction
+        if (direction === "up") {
+          mainBody.classList.remove("down");
+          leftSideText.classList.remove("down");
+          middleText.classList.remove("down");
+          greenBox.classList.remove("down");
+          textsDiv.classList.remove("down");
+          percentageText.textContent = `Up By: ${percentage}%`;
+
+          if (upImageData) {
+            mainBody.style.backgroundImage = `url(${upImageData})`;
+          }
+        } else {
+          mainBody.classList.add("down");
+          leftSideText.classList.add("down");
+          middleText.classList.add("down");
+          greenBox.classList.add("down");
+          textsDiv.classList.add("down");
+          percentageText.textContent = `Down By: ${percentage}%`;
+
+          if (downImageData) {
+            mainBody.style.backgroundImage = `url(${downImageData})`;
+          }
+        }
+
+        // Update points
+        pointsText.textContent = `Today's Point: ${points}`;
+
+        // Update date
+        updateDateTime();
+      }
+
+      function updateDateTime() {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "2-digit",
+        });
+        document.getElementById("dateText").textContent = `${dateStr}, 3:00 PM`;
+      }
+
+      // Add roundRect for older browsers
+      function addRoundRectSupport() {
+        if (!CanvasRenderingContext2D.prototype.roundRect) {
+          CanvasRenderingContext2D.prototype.roundRect = function (
+            x,
+            y,
+            width,
+            height,
+            radius
+          ) {
+            this.beginPath();
+            this.moveTo(x + radius, y);
+            this.lineTo(x + width - radius, y);
+            this.quadraticCurveTo(x + width, y, x + width, y + radius);
+            this.lineTo(x + width, y + height - radius);
+            this.quadraticCurveTo(
+              x + width,
+              y + height,
+              x + width - radius,
+              y + height
+            );
+            this.lineTo(x + radius, y + height);
+            this.quadraticCurveTo(x, y + height, x, y + height - radius);
+            this.lineTo(x, y + radius);
+            this.quadraticCurveTo(x, y, x + radius, y);
+            this.closePath();
+          };
+        }
+      }
+
+      // Initialize
+      window.onload = function () {
+        addRoundRectSupport();
+        updateDisplay();
+      };
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+      function downloadImage() {
+        const mainBody = document.getElementById("fbScreen"); // capture the full preview
+        html2canvas(mainBody, {
+          scale: 3, // Increase the resolution (360*3 = 1080, 640*3 = 1920)
+          useCORS: true, // Allow cross-origin images
+        }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = "nepse-market.png";
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        });
+      }
+    </script>
+  </body>
+</html>
