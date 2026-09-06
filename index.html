@@ -1,339 +1,356 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Parasi Patra Editor</title>
-    <link rel="manifest" href="manifest.json" />
-    <meta name="theme-color" content="#0066b3" />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
-    />
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        background: #f4f4f4;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 20px;
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parasi Patra Editor</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0066b3" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    #controls {
+      margin-bottom: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    input[type="file"],
+    input[type="color"],
+    input[type="number"],
+    input[type="text"],
+    button,
+    input[type="range"] {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    #canvasContainer {
+      border: 2px solid #ccc;
+      background: #fff;
+    }
+
+    canvas {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 15px;
+      background-color: #f8f9fa;
+      margin-top: 30px;
+      font-size: 14px;
+      width: 100%;
+    }
+
+    /* Loader styles */
+    #loader {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0066b3;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
       }
 
-      h1 {
-        margin-bottom: 20px;
-        color: #333;
+      100% {
+        transform: rotate(360deg);
       }
+    }
+  </style>
+</head>
 
-      #controls {
-        margin-bottom: 20px;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-
-      input[type="file"],
-      input[type="color"],
-      input[type="number"],
-      input[type="text"],
-      button,
-      input[type="range"] {
-        padding: 8px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-      }
-
-      #canvasContainer {
-        border: 2px solid #ccc;
-        background: #fff;
-      }
-
-      canvas {
-        display: block;
-        max-width: 100%;
-        height: auto;
-      }
-
-      footer {
-        text-align: center;
-        padding: 15px;
-        background-color: #f8f9fa;
-        margin-top: 30px;
-        font-size: 14px;
-        width: 100%;
-      }
-
-      /* Loader styles */
-      #loader {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #0066b3;
-        border-radius: 50%;
-        width: 40px;
-        height: 40px;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-
-        100% {
-          transform: rotate(360deg);
-        }
-      }
-    </style>
-  </head>
-
-  <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
-      <div class="container-fluid">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarNav"
-        >
-          <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-          <ul class="navbar-nav me-auto">
-            <li class="nav-item">
-              <a class="nav-link active" href="index.html">Editor</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="headingOne.html">Editor 2</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="pdfToJpg.html">Pdf To Jpg</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="nepse.html">NEPSE</a>
-            </li>
-          </ul>
-        </div>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+    <div class="container-fluid">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link active" href="index.html">Editor</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="headingOne.html">Editor 2</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="pdfToJpg.html">Pdf To Jpg</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="nepse.html">NEPSE</a>
+          </li>
+        </ul>
       </div>
-    </nav>
-
-    <h1 class="my-2">Parasi Patra Editor</h1>
-
-    <div id="controls">
-      <input type="file" id="imageUpload" accept="image/*" />
-      <input
-        type="text"
-        id="watermarkText"
-        placeholder="Watermark Text"
-        value="www.parasipatra.com"
-      />
-      <input type="number" id="fontSize" min="10" max="100" value="22" />
-      <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
-      <input type="range" id="rotation" min="0" max="360" step="1" value="0" />
-      <button id="downloadBtn">Download</button>
     </div>
+  </nav>
 
-    <div id="canvasContainer">
-      <canvas id="canvas"></canvas>
-    </div>
+  <h1 class="my-2">Parasi Patra Editor</h1>
 
-    <!-- Loader element -->
-    <div id="loader">
-      <div class="spinner"></div>
-    </div>
+  <div id="controls">
+    <input type="file" id="imageUpload" accept="image/*" />
+    <input type="text" id="watermarkText" placeholder="Watermark Text" value="www.parasipatra.com" />
+    <input type="number" id="fontSize" min="10" max="100" value="22" />
+    <input type="range" id="opacity" min="0" max="1" step="0.01" value="1" />
+    <input type="range" id="rotation" min="0" max="360" step="1" value="0" />
+    <button id="downloadBtn">Download</button>
+  </div>
 
-    <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
-    <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-          .getRegistrations()
-          .then(function (registrations) {
-            for (let registration of registrations) {
-              registration.unregister();
-            }
-          });
-      }
-      const canvas = document.getElementById("canvas");
-      const ctx = canvas.getContext("2d");
+  <div id="canvasContainer">
+    <canvas id="canvas"></canvas>
+  </div>
 
-      let img = new Image();
-      let watermark = document.getElementById("watermarkText").value;
-      let textX = 50,
-        textY = 50;
-      let isDragging = false;
-      let fontSize = 22;
-      let opacity = 1;
-      let rotation = 0;
-      const lineColor = "#0066b3";
+  <!-- Loader element -->
+  <div id="loader">
+    <div class="spinner"></div>
+  </div>
 
-      document.getElementById("imageUpload").addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function (event) {
-          img.onload = () => {
-            const maxWidth = 1200;
-            const maxHeight = 900;
-            let scale = Math.min(
-              maxWidth / img.width,
-              maxHeight / img.height,
-              1
-            );
-            canvas.width = img.width * scale;
-            canvas.height = img.height * scale;
-            textX = canvas.width / 2;
-            textY = canvas.height / 2;
-            draw();
-          };
-          img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-
-      document
-        .getElementById("watermarkText")
-        .addEventListener("input", (e) => {
-          watermark = e.target.value;
-          draw();
+  <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .getRegistrations()
+        .then(function (registrations) {
+          for (let registration of registrations) {
+            registration.unregister();
+          }
         });
+    }
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
 
-      document.getElementById("fontSize").addEventListener("input", (e) => {
-        fontSize = parseInt(e.target.value);
-        draw();
-      });
+    let img = new Image();
+    let watermark = document.getElementById("watermarkText").value;
+    let textX = 50,
+      textY = 50;
+    let isDragging = false;
+    let fontSize = 22;
+    let opacity = 1;
+    let rotation = 0;
+    const lineColor = "#0066b3";
 
-      document.getElementById("opacity").addEventListener("input", (e) => {
-        opacity = parseFloat(e.target.value);
-        draw();
-      });
-
-      document.getElementById("rotation").addEventListener("input", (e) => {
-        rotation = parseFloat(e.target.value);
-        draw();
-      });
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (img.src) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-        ctx.save();
-        ctx.translate(textX, textY);
-        ctx.rotate((rotation * Math.PI) / 180);
-        ctx.font = `${fontSize}px Arial`;
-        ctx.globalAlpha = opacity;
-
-        const totalLineWidth = canvas.width * 0.5;
-        const textWidth = ctx.measureText(watermark).width;
-        const lineWidth = (totalLineWidth - textWidth) / 2;
-
-        ctx.strokeStyle = "#0066b3";
-        ctx.lineWidth = 1.5;
-        ctx.shadowColor = "#ffffff";
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.moveTo(-totalLineWidth / 2, 0);
-        ctx.lineTo(-totalLineWidth / 2 + lineWidth, 0);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(totalLineWidth / 2 - lineWidth, 0);
-        ctx.lineTo(totalLineWidth / 2, 0);
-        ctx.stroke();
-
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 4;
-        ctx.strokeText(watermark, -textWidth / 2, fontSize / 3);
-
-        ctx.fillStyle = lineColor;
-        ctx.fillText(watermark, -textWidth / 2, fontSize / 3);
-
-        ctx.restore();
-      }
-
-      function getMousePos(canvas, evt) {
-        const rect = canvas.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-        return {
-          x: (evt.clientX - rect.left) * scaleX,
-          y: (evt.clientY - rect.top) * scaleY,
+    document.getElementById("imageUpload").addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        img.onload = () => {
+          const maxWidth = 1200;
+          const maxHeight = 900;
+          let scale = Math.min(
+            maxWidth / img.width,
+            maxHeight / img.height,
+            1
+          );
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          textX = canvas.width / 2;
+          textY = canvas.height / 2;
+          draw();
         };
-      }
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
 
-      canvas.addEventListener("mousedown", (e) => {
+    document
+      .getElementById("watermarkText")
+      .addEventListener("input", (e) => {
+        watermark = e.target.value;
+        draw();
+      });
+
+    document.getElementById("fontSize").addEventListener("input", (e) => {
+      fontSize = parseInt(e.target.value);
+      draw();
+    });
+
+    document.getElementById("opacity").addEventListener("input", (e) => {
+      opacity = parseFloat(e.target.value);
+      draw();
+    });
+
+    document.getElementById("rotation").addEventListener("input", (e) => {
+      rotation = parseFloat(e.target.value);
+      draw();
+    });
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (img.src) ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.translate(textX, textY);
+      ctx.rotate((rotation * Math.PI) / 180);
+      ctx.font = `${fontSize}px Arial`;
+      ctx.globalAlpha = opacity;
+
+      const totalLineWidth = canvas.width * 0.5;
+      const textWidth = ctx.measureText(watermark).width;
+      const lineWidth = (totalLineWidth - textWidth) / 2;
+
+      ctx.strokeStyle = "#0066b3";
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = "#ffffff";
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.moveTo(-totalLineWidth / 2, 0);
+      ctx.lineTo(-totalLineWidth / 2 + lineWidth, 0);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(totalLineWidth / 2 - lineWidth, 0);
+      ctx.lineTo(totalLineWidth / 2, 0);
+      ctx.stroke();
+
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 4;
+      ctx.strokeText(watermark, -textWidth / 2, fontSize / 3);
+
+      ctx.fillStyle = lineColor;
+      ctx.fillText(watermark, -textWidth / 2, fontSize / 3);
+
+      ctx.restore();
+    }
+
+    function getMousePos(canvas, evt) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (evt.clientX - rect.left) * scaleX,
+        y: (evt.clientY - rect.top) * scaleY,
+      };
+    }
+
+    canvas.addEventListener("mousedown", (e) => {
+      const pos = getMousePos(canvas, e);
+      const mouseX = pos.x;
+      const mouseY = pos.y;
+      const totalLineWidth = canvas.width * 0.5;
+      const textHeight = fontSize;
+      if (
+        mouseX > textX - totalLineWidth / 2 &&
+        mouseX < textX + totalLineWidth / 2 &&
+        mouseY > textY - textHeight &&
+        mouseY < textY + textHeight
+      ) {
+        isDragging = true;
+      }
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+      if (isDragging) {
         const pos = getMousePos(canvas, e);
-        const mouseX = pos.x;
-        const mouseY = pos.y;
+        textX = pos.x;
+        textY = pos.y;
+        draw();
+      }
+    });
+
+    canvas.addEventListener("mouseup", () => {
+      isDragging = false;
+    });
+    canvas.addEventListener("mouseleave", () => {
+      isDragging = false;
+    });
+
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      // Show loader
+      const loader = document.getElementById("loader");
+      loader.style.display = "flex";
+
+      // Use the preview canvas directly for download
+      const link = document.createElement("a");
+      link.download = "watermarked_image.jpg";
+      link.href = canvas.toDataURL("image/jpg");
+      link.click();
+
+      // Hide loader after download
+      loader.style.display = "none";
+    });
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("./sw.js")
+          .then((reg) => console.log("Service Worker registered", reg))
+          .catch((err) => console.log("Service Worker failed", err));
+      });
+
+      canvas.addEventListener("touchstart", (e) => {
+        e.preventDefault();
+        const touch = e.touches[0];
+        const pos = getMousePos(canvas, touch);
         const totalLineWidth = canvas.width * 0.5;
         const textHeight = fontSize;
         if (
-          mouseX > textX - totalLineWidth / 2 &&
-          mouseX < textX + totalLineWidth / 2 &&
-          mouseY > textY - textHeight &&
-          mouseY < textY + textHeight
+          pos.x > textX - totalLineWidth / 2 &&
+          pos.x < textX + totalLineWidth / 2 &&
+          pos.y > textY - textHeight &&
+          pos.y < textY + textHeight
         ) {
           isDragging = true;
         }
-      });
+      }, { passive: false });
 
-      canvas.addEventListener("mousemove", (e) => {
+      canvas.addEventListener("touchmove", (e) => {
+        e.preventDefault();
         if (isDragging) {
-          const pos = getMousePos(canvas, e);
+          const touch = e.touches[0];
+          const pos = getMousePos(canvas, touch);
           textX = pos.x;
           textY = pos.y;
           draw();
         }
-      });
+      }, { passive: false });
 
-      canvas.addEventListener("mouseup", () => {
+      canvas.addEventListener("touchend", () => {
         isDragging = false;
       });
-      canvas.addEventListener("mouseleave", () => {
-        isDragging = false;
-      });
+    }
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.min.js"
+    integrity="sha512-eHx4nbBTkIr2i0m9SANm/cczPESd0DUEcfl84JpIuutE6oDxPhXvskMR08Wmvmfx5wUpVjlWdi82G5YLvqqJdA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
 
-      document.getElementById("downloadBtn").addEventListener("click", () => {
-        // Show loader
-        const loader = document.getElementById("loader");
-        loader.style.display = "flex";
-
-        // Use the preview canvas directly for download
-        const link = document.createElement("a");
-        link.download = "watermarked_image.jpg";
-        link.href = canvas.toDataURL("image/jpg");
-        link.click();
-
-        // Hide loader after download
-        loader.style.display = "none";
-      });
-
-      if ("serviceWorker" in navigator) {
-        window.addEventListener("load", () => {
-          navigator.serviceWorker
-            .register("./sw.js")
-            .then((reg) => console.log("Service Worker registered", reg))
-            .catch((err) => console.log("Service Worker failed", err));
-        });
-      }
-    </script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.min.js"
-      integrity="sha512-eHx4nbBTkIr2i0m9SANm/cczPESd0DUEcfl84JpIuutE6oDxPhXvskMR08Wmvmfx5wUpVjlWdi82G5YLvqqJdA=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-  </body>
 </html>
