@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FB Embed - Parasi Patra</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            margin-top: 30px;
+            font-size: 14px;
+            width: 100%;
+        }
+
+        .step-box {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .step-number {
+            background: #0066b3;
+            color: #fff;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
+        <div class="container-fluid">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Editor</a></li>
+                    <li class="nav-item"><a class="nav-link" href="headingOne.html">Editor 2</a></li>
+                    <li class="nav-item"><a class="nav-link" href="pdfToJpg.html">Pdf To Jpg</a></li>
+                    <li class="nav-item"><a class="nav-link" href="nepse.html">NEPSE</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="fbEmbed.html">FB Embed</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <h1 class="my-3">FB Embed Generator</h1>
+
+    <div class="w-100" style="max-width:700px">
+
+        <!-- Step 1: Share link → open in browser -->
+        <div class="step-box" id="step1">
+            <p><span class="step-number">1</span><strong>Paste your Facebook link</strong> (share link or direct URL)
+            </p>
+            <div class="input-group">
+                <input type="text" id="fbUrl" class="form-control" placeholder="Paste Facebook link here..." />
+                <button class="btn btn-primary" id="processBtn">Next</button>
+            </div>
+        </div>
+
+        <!-- Step 2: If share link, get real URL -->
+        <div class="step-box" id="step2" style="display:none">
+            <p><span class="step-number">2</span><strong>Copy the real URL from the opened tab</strong></p>
+            <p class="text-muted small">We opened your link in a new tab. Copy the URL from that tab's address bar and
+                paste below:</p>
+            <div class="input-group">
+                <input type="text" id="realUrl" class="form-control"
+                    placeholder="Paste the real URL from browser tab..." />
+                <button class="btn btn-primary" id="generateBtn">Get Embed</button>
+            </div>
+        </div>
+
+        <!-- Output -->
+        <div id="embedOutput" style="display:none">
+            <div class="step-box">
+                <p><strong>✅ Embed Code:</strong></p>
+                <textarea id="embedCode" class="form-control mb-2" rows="5" readonly></textarea>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-secondary btn-sm" id="copyBtn">Copy Embed Code</button>
+                    <button class="btn btn-outline-danger btn-sm" id="resetBtn">Start Over</button>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <p><strong>Preview:</strong></p>
+                <div id="embedPreview" class="bg-white p-2 border rounded text-center"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>&copy; <span id="year"></span> Smaran Sharma. All rights reserved.</footer>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+                for (let r of regs) r.unregister();
+            });
+        }
+
+        function isShareLink(url) {
+            return url.includes("/share/");
+        }
+
+        function buildEmbed(url) {
+            const encoded = encodeURIComponent(url);
+            const isReel = /\/reel\//.test(url);
+            const isVideo = /\/(videos|watch)\b/.test(url);
+
+            if (isReel) {
+                return `<iframe src="https://www.facebook.com/plugins/video.php?height=476&href=${encoded}&show_text=false&width=265&t=0" width="265" height="476" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>`;
+            } else if (isVideo) {
+                return `<iframe src="https://www.facebook.com/plugins/video.php?href=${encoded}&show_text=false&width=560" width="560" height="314" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>`;
+            } else {
+                return `<iframe src="https://www.facebook.com/plugins/post.php?href=${encoded}&show_text=true&width=500" width="500" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowfullscreen="true" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen="true"></iframe>`;
+            }
+        }
+
+        function showEmbed(url) {
+            const embed = buildEmbed(url);
+            document.getElementById("embedCode").value = embed;
+            document.getElementById("embedPreview").innerHTML = embed;
+            document.getElementById("embedOutput").style.display = "block";
+            document.getElementById("step1").style.display = "none";
+            document.getElementById("step2").style.display = "none";
+        }
+
+        // Step 1: Process
+        document.getElementById("processBtn").addEventListener("click", () => {
+            const url = document.getElementById("fbUrl").value.trim();
+            if (!url) return;
+
+            if (isShareLink(url)) {
+                // Open in new tab so user can get real URL
+                window.open(url, "_blank");
+                document.getElementById("step2").style.display = "block";
+            } else {
+                // Direct URL — generate immediately
+                showEmbed(url);
+            }
+        });
+
+        // Step 2: Generate from real URL
+        document.getElementById("generateBtn").addEventListener("click", () => {
+            const url = document.getElementById("realUrl").value.trim();
+            if (!url) return;
+
+            if (isShareLink(url)) {
+                alert("This is still a share link. Copy the URL from your browser address bar after the page loads.");
+                return;
+            }
+
+            showEmbed(url);
+        });
+
+        // Copy
+        document.getElementById("copyBtn").addEventListener("click", () => {
+            const textarea = document.getElementById("embedCode");
+            textarea.select();
+            navigator.clipboard.writeText(textarea.value);
+            const btn = document.getElementById("copyBtn");
+            btn.textContent = "Copied!";
+            setTimeout(() => btn.textContent = "Copy Embed Code", 2000);
+        });
+
+        // Reset
+        document.getElementById("resetBtn").addEventListener("click", () => {
+            document.getElementById("fbUrl").value = "";
+            document.getElementById("realUrl").value = "";
+            document.getElementById("step1").style.display = "block";
+            document.getElementById("step2").style.display = "none";
+            document.getElementById("embedOutput").style.display = "none";
+        });
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0-alpha1/js/bootstrap.min.js"
+        integrity="sha512-eHx4nbBTkIr2i0m9SANm/cczPESd0DUEcfl84JpIuutE6oDxPhXvskMR08Wmvmfx5wUpVjlWdi82G5YLvqqJdA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+
+</html>

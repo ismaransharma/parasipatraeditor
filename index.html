@@ -118,6 +118,7 @@
           <li class="nav-item">
             <a class="nav-link" href="nepse.html">NEPSE</a>
           </li>
+          <li class="nav-item"><a class="nav-link" href="fbEmbed.html">FB Embed</a></li>
         </ul>
       </div>
     </div>
@@ -143,8 +144,9 @@
     <div class="spinner"></div>
   </div>
 
-  <footer>&copy; 2025 Smaran Sharma. All rights reserved.</footer>
+  <footer>&copy; <span id="year"></span> Smaran Sharma. All rights reserved.</footer>
   <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker
         .getRegistrations()
